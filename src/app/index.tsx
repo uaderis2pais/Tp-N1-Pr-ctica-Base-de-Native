@@ -1,98 +1,120 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+import { useState } from 'react';
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  SafeAreaView,
+  StatusBar,
+} from 'react-native';
+import { useThemeStyles, ThemeMode } from '@/hooks/useThemeStyles';
 
 export default function HomeScreen() {
+  const [count, setCount] = useState<number>(0);
+  const [theme, setTheme] = useState<ThemeMode>('light');
+
+  const { styles, colors } = useThemeStyles(theme);
+
+  const isMaxReached = count >= 10;
+
+  const handleIncrement = () => {
+    if (!isMaxReached) {
+      setCount((prev) => prev + 1);
+    }
+  };
+
+  const handleReset = () => {
+    setCount(0);
+  };
+
+  const handleToggleTheme = () => {
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+  };
+
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+    <SafeAreaView style={styles.screenContainer}>
+      <StatusBar
+        barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
+        backgroundColor={colors.containerBg}
+      />
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}>
+        <Text style={styles.headerTitle}>01 - Contador</Text>
+        <Text style={styles.headerSubtitle}>
+          Práctica Base React Native: State & Dynamic Theme
+        </Text>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+        {/* Card Contenedor */}
+        <View style={styles.card}>
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>
+              Tema Activo: {theme === 'light' ? '☀️ Claro' : '🌙 Oscuro'}
+            </Text>
+          </View>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+          {/* Valor del Contador Grande y Centrado */}
+          <View style={styles.counterValueContainer}>
+            <Text style={styles.counterValueText}>{count}</Text>
+          </View>
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+          {/* Aviso Bonus de Límite (Al llegar a 10) */}
+          {isMaxReached && (
+            <View style={styles.warningBanner}>
+              <Text style={styles.warningText}>
+                ⚠️ ¡Límite máximo de 10 alcanzado!
+              </Text>
+            </View>
+          )}
+
+          {/* Grupo de Botones con Pressable y Feedback Visual */}
+          <View style={styles.buttonGroup}>
+            {/* Botón +1 */}
+            <Pressable
+              disabled={isMaxReached}
+              onPress={handleIncrement}
+              android_ripple={{ color: 'rgba(255, 255, 255, 0.3)' }}
+              style={({ pressed }) => [
+                styles.actionButton,
+                isMaxReached ? styles.buttonDisabled : styles.buttonPrimary,
+                pressed && !isMaxReached && { opacity: 0.8, transform: [{ scale: 0.98 }] },
+              ]}>
+              <Text
+                style={
+                  isMaxReached ? styles.buttonTextDisabled : styles.buttonTextPrimary
+                }>
+                {isMaxReached ? 'Máximo alcanzado (+1)' : '+1 Incrementar'}
+              </Text>
+            </Pressable>
+
+            {/* Botón Reset */}
+            <Pressable
+              onPress={handleReset}
+              android_ripple={{ color: 'rgba(255, 255, 255, 0.3)' }}
+              style={({ pressed }) => [
+                styles.actionButton,
+                styles.buttonReset,
+                pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] },
+              ]}>
+              <Text style={styles.buttonTextReset}>🔄 Reset (0)</Text>
+            </Pressable>
+
+            {/* Botón Toggle Tema */}
+            <Pressable
+              onPress={handleToggleTheme}
+              android_ripple={{ color: 'rgba(255, 255, 255, 0.3)' }}
+              style={({ pressed }) => [
+                styles.actionButton,
+                styles.buttonToggle,
+                pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] },
+              ]}>
+              <Text style={styles.buttonTextToggle}>
+                {theme === 'light' ? '🌙 Cambiar a Oscuro' : '☀️ Cambiar a Claro'}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
-  },
-});
