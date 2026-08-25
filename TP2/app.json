@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "TP2 - Checkout Tienda",
+    "slug": "tp2",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "scheme": "tp2",
+    "web": {
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
