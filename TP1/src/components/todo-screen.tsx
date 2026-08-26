@@ -238,7 +238,7 @@ export default function TodoScreen() {
           <Pressable
             onPress={() => handleStartEditing(item)}
             style={({ pressed }) => [styles.editIconBtn, pressed && styles.pressed]}>
-            <Text style={styles.editIconText}>✏️</Text>
+            <Text style={styles.editIconText}>Editar</Text>
           </Pressable>
         </Pressable>
       );
@@ -346,7 +346,6 @@ export default function TodoScreen() {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyEmoji}>📝</Text>
               <Text style={[styles.emptyTitle, isDark && styles.textDark]}>
                 No hay tareas {filter !== 'all' ? 'en esta categoría' : 'guardadas'}
               </Text>

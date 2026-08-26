@@ -49,7 +49,7 @@ export default function HomeScreen() {
         <View style={styles.card}>
           <View style={styles.badge}>
             <Text style={styles.badgeText}>
-              Tema Activo: {theme === 'light' ? '☀️ Claro' : '🌙 Oscuro'}
+              Tema Activo: {theme === 'light' ? 'Claro' : 'Oscuro'}
             </Text>
           </View>
 
@@ -62,7 +62,7 @@ export default function HomeScreen() {
           {isMaxReached && (
             <View style={styles.warningBanner}>
               <Text style={styles.warningText}>
-                ⚠️ ¡Límite máximo de 10 alcanzado!
+                ¡Límite máximo de 10 alcanzado!
               </Text>
             </View>
           )}
@@ -96,7 +96,7 @@ export default function HomeScreen() {
                 styles.buttonReset,
                 pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] },
               ]}>
-              <Text style={styles.buttonTextReset}>🔄 Reset (0)</Text>
+              <Text style={styles.buttonTextReset}>Reset (0)</Text>
             </Pressable>
 
             {/* Botón Toggle Tema */}
@@ -109,7 +109,7 @@ export default function HomeScreen() {
                 pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] },
               ]}>
               <Text style={styles.buttonTextToggle}>
-                {theme === 'light' ? '🌙 Cambiar a Oscuro' : '☀️ Cambiar a Claro'}
+                {theme === 'light' ? 'Cambiar a Oscuro' : 'Cambiar a Claro'}
               </Text>
             </Pressable>
           </View>

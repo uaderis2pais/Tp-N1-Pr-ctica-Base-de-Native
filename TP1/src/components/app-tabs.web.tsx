@@ -17,10 +17,10 @@ export default function AppTabs() {
       <TabList asChild>
         <CustomTabList>
           <TabTrigger name="home" href="/" asChild>
-            <TabButton icon="🔢">01 Contador</TabButton>
+            <TabButton>01 Contador</TabButton>
           </TabTrigger>
           <TabTrigger name="explore" href="/explore" asChild>
-            <TabButton icon="📝">02 To-Do List</TabButton>
+            <TabButton>02 To-Do List</TabButton>
           </TabTrigger>
         </CustomTabList>
       </TabList>
@@ -28,11 +28,7 @@ export default function AppTabs() {
   );
 }
 
-interface CustomTabButtonProps extends TabTriggerSlotProps {
-  icon: string;
-}
-
-export function TabButton({ children, isFocused, icon, ...props }: CustomTabButtonProps) {
+export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps) {
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
 
@@ -48,7 +44,6 @@ export function TabButton({ children, isFocused, icon, ...props }: CustomTabButt
           styles.tabButtonContent,
           isFocused && (isDark ? styles.tabActiveDark : styles.tabActiveLight),
         ]}>
-        <Text style={styles.tabIcon}>{icon}</Text>
         <Text
           style={[
             styles.tabText,
@@ -135,9 +130,6 @@ const styles = StyleSheet.create({
   },
   tabActiveDark: {
     backgroundColor: '#334155',
-  },
-  tabIcon: {
-    fontSize: 16,
   },
   tabText: {
     fontSize: 14,
