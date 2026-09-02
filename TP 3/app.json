@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "iBank - Banking App",
+    "slug": "ibank-tp3",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "ibanktp",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ibank.tp3"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0F172A"
+      },
+      "package": "com.ibank.tp3"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}
