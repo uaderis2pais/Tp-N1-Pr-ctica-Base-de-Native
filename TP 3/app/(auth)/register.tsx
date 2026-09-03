@@ -55,7 +55,7 @@ export default function RegisterScreen() {
   const passwordValue = watch('password') || ''
 
   useEffect(() => {
-    let timer: NodeJS.Timeout
+    let timer: any
     if (cooldown > 0) {
       timer = setInterval(() => {
         setCooldown((prev) => prev - 1)

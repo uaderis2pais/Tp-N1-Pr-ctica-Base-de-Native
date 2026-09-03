@@ -76,7 +76,7 @@ function NavigationGuard() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <StatusBar style="dark" backgroundColor={theme.colors.background} />
+      <StatusBar style="dark" />
       <NavigationGuard />
     </AuthProvider>
   )

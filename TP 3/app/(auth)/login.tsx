@@ -58,7 +58,7 @@ export default function LoginScreen() {
   const isButtonFormValid = isValid && emailValue?.length > 0 && passwordValue?.length > 0
 
   useEffect(() => {
-    let timer: NodeJS.Timeout
+    let timer: any
     if (cooldown > 0) {
       timer = setInterval(() => {
         setCooldown((prev) => prev - 1)
