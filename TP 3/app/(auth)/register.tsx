@@ -12,7 +12,6 @@ import { useRouter } from 'expo-router'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as Linking from 'expo-linking'
-import { Ionicons } from '@expo/vector-icons'
 
 import { theme } from '../../src/theme/theme'
 import { supabase } from '../../src/lib/supabase'
@@ -27,7 +26,6 @@ import { ErrorMessageBanner } from '../../src/components/ui/ErrorMessageBanner'
 import { PasswordChecklist } from '../../src/components/PasswordChecklist'
 import { HeaderIllustration } from '../../src/components/HeaderIllustration'
 import { ScreenHeader } from '../../src/components/ScreenHeader'
-import { CaptchaModal } from '../../src/components/CaptchaModal'
 
 export default function RegisterScreen() {
   const router = useRouter()
@@ -36,10 +34,6 @@ export default function RegisterScreen() {
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [cooldown, setCooldown] = useState(0)
-
-  // CAPTCHA Obligatorio (Puntos Extra)
-  const [showCaptcha, setShowCaptcha] = useState(false)
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
 
   const {
     control,
@@ -59,7 +53,6 @@ export default function RegisterScreen() {
   })
 
   const passwordValue = watch('password') || ''
-  const isButtonValid = isValid && captchaToken !== null
 
   useEffect(() => {
     let timer: NodeJS.Timeout
@@ -74,7 +67,7 @@ export default function RegisterScreen() {
   }, [cooldown])
 
   const onSubmit = async (data: RegisterFormData) => {
-    if (!captchaToken || isLoading || cooldown > 0) return
+    if (isLoading || cooldown > 0) return
     setIsLoading(true)
     setErrorMessage(null)
 
@@ -86,7 +79,6 @@ export default function RegisterScreen() {
         password: data.password,
         options: {
           emailRedirectTo,
-          captchaToken,
           data: {
             full_name: data.fullName.trim(),
           },
@@ -94,6 +86,7 @@ export default function RegisterScreen() {
       })
 
       if (error) {
+        console.warn('Error en signUp Supabase:', error)
         const parsed = translateAuthError(error)
 
         if (parsed.isRateLimit) {
@@ -101,7 +94,6 @@ export default function RegisterScreen() {
         }
 
         setErrorMessage(parsed.message)
-        setCaptchaToken(null)
         return
       }
 
@@ -109,9 +101,9 @@ export default function RegisterScreen() {
       setPendingEmail(data.email.trim())
       router.push('/(auth)/pending-confirm')
     } catch (err: any) {
+      console.warn('Excepción en signUp:', err)
       const parsed = translateAuthError(err)
       setErrorMessage(parsed.message)
-      setCaptchaToken(null)
     } finally {
       setIsLoading(false)
     }
@@ -231,36 +223,11 @@ export default function RegisterScreen() {
                 )}
               />
 
-              {/* Botón Obligatorio de Verificación de CAPTCHA */}
-              <TouchableOpacity
-                style={[
-                  styles.captchaTrigger,
-                  captchaToken ? styles.captchaVerified : styles.captchaPending,
-                ]}
-                onPress={() => setShowCaptcha(true)}
-              >
-                <Ionicons
-                  name={captchaToken ? 'checkmark-circle' : 'shield-checkmark-outline'}
-                  size={20}
-                  color={captchaToken ? theme.colors.success : theme.colors.primary}
-                />
-                <Text
-                  style={[
-                    styles.captchaTriggerText,
-                    captchaToken && { color: theme.colors.success },
-                  ]}
-                >
-                  {captchaToken
-                    ? '✓ CAPTCHA Verificado'
-                    : 'Completar CAPTCHA (Obligatorio)'}
-                </Text>
-              </TouchableOpacity>
-
               <CustomButton
                 title={isLoading ? 'Creando cuenta...' : 'Registrarse'}
                 loading={isLoading}
                 cooldownSeconds={cooldown}
-                disabled={!isButtonValid}
+                disabled={!isValid}
                 onPress={handleSubmit(onSubmit)}
                 style={styles.submitButton}
               />
@@ -279,13 +246,6 @@ export default function RegisterScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-
-      {/* Modal de CAPTCHA hCaptcha / Turnstile (Puntos Extra) */}
-      <CaptchaModal
-        visible={showCaptcha}
-        onClose={() => setShowCaptcha(false)}
-        onTokenReceived={(token) => setCaptchaToken(token)}
-      />
     </View>
   )
 }
@@ -330,32 +290,8 @@ const styles = StyleSheet.create({
   formSection: {
     marginTop: theme.spacing.sm,
   },
-  captchaTrigger: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: theme.spacing.sm,
-    borderRadius: theme.borderRadius.md,
-    marginTop: theme.spacing.sm,
-    marginBottom: theme.spacing.md,
-    borderWidth: 1,
-  },
-  captchaPending: {
-    backgroundColor: theme.colors.primaryLight,
-    borderColor: theme.colors.primary + '30',
-  },
-  captchaVerified: {
-    backgroundColor: '#E8F8F5',
-    borderColor: theme.colors.success + '40',
-  },
-  captchaTriggerText: {
-    fontFamily: theme.fonts.semiBold,
-    fontSize: 13,
-    color: theme.colors.primary,
-    marginLeft: theme.spacing.xs,
-  },
   submitButton: {
-    marginTop: theme.spacing.xs,
+    marginTop: theme.spacing.md,
   },
   footer: {
     flexDirection: 'row',

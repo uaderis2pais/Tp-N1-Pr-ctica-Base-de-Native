@@ -24,7 +24,34 @@ export function translateAuthError(error: AuthError | Error | null): ParsedAuthE
   const status = (error as any).status || 0
   const errorCode = (error as AuthError).code?.toLowerCase() || ''
 
-  // 1. Rate Limiting (Error 429 u over_request_rate_limit)
+  // 1. Error al enviar email de confirmación (SMTP desconfigurado o límite alcanzado en Supabase)
+  if (
+    rawMessage.includes('error sending confirmation email') ||
+    rawMessage.includes('authretryablefetcherror')
+  ) {
+    return {
+      code: 'SMTP_CONFIG_ERROR',
+      message: 'Error al enviar el mail. Revisa los datos de SMTP en Supabase Dashboard (Authentication -> SMTP Settings).',
+      isRateLimit: false,
+      isEmailNotConfirmed: false,
+    }
+  }
+
+  // 2. CAPTCHA Disallowed en Endpoint (Instrucciones para Supabase Dashboard)
+  if (
+    rawMessage.includes('captcha protection: request disallowed') ||
+    rawMessage.includes('no captcha_token found') ||
+    rawMessage.includes('already-seen-response')
+  ) {
+    return {
+      code: 'CAPTCHA_DISALLOWED',
+      message: 'En Supabase Dashboard (Authentication -> Attack Protection), apaga la casilla Enable Captcha protection para permitir envíos.',
+      isRateLimit: false,
+      isEmailNotConfirmed: false,
+    }
+  }
+
+  // 3. Rate Limiting (Error 429 u over_request_rate_limit)
   if (status === 429 || errorCode.includes('rate_limit') || rawMessage.includes('rate limit')) {
     return {
       code: 'OVER_RATE_LIMIT',
@@ -34,7 +61,7 @@ export function translateAuthError(error: AuthError | Error | null): ParsedAuthE
     }
   }
 
-  // 2. Email no confirmado
+  // 4. Email no confirmado
   if (errorCode.includes('email_not_confirmed') || rawMessage.includes('email not confirmed')) {
     return {
       code: 'EMAIL_NOT_CONFIRMED',
@@ -44,7 +71,22 @@ export function translateAuthError(error: AuthError | Error | null): ParsedAuthE
     }
   }
 
-  // 3. Usuario / Email no registrado o no encontrado
+  // 5. Usuario ya existente en registro
+  if (
+    errorCode.includes('user_already_exists') ||
+    errorCode.includes('email_exists') ||
+    rawMessage.includes('already registered') ||
+    rawMessage.includes('user already exists')
+  ) {
+    return {
+      code: 'USER_ALREADY_EXISTS',
+      message: 'Este correo electrónico ya se encuentra registrado. Probá iniciando sesión.',
+      isRateLimit: false,
+      isEmailNotConfirmed: false,
+    }
+  }
+
+  // 6. Usuario / Email no registrado o no encontrado
   if (
     errorCode.includes('user_not_found') ||
     errorCode.includes('email_not_found') ||
@@ -61,7 +103,7 @@ export function translateAuthError(error: AuthError | Error | null): ParsedAuthE
     }
   }
 
-  // 4. Contraseña incorrecta
+  // 7. Contraseña incorrecta
   if (
     errorCode.includes('invalid_password') ||
     rawMessage.includes('invalid password') ||
@@ -76,7 +118,7 @@ export function translateAuthError(error: AuthError | Error | null): ParsedAuthE
     }
   }
 
-  // 5. Credenciales inválidas genéricas
+  // 8. Credenciales inválidas genéricas
   if (
     errorCode.includes('invalid_credentials') ||
     rawMessage.includes('invalid login credentials') ||
@@ -90,17 +132,7 @@ export function translateAuthError(error: AuthError | Error | null): ParsedAuthE
     }
   }
 
-  // 6. Usuario ya existente en registro
-  if (errorCode.includes('user_already_exists') || rawMessage.includes('already registered')) {
-    return {
-      code: 'USER_ALREADY_EXISTS',
-      message: 'Si el correo electrónico ingresado es válido, se enviarán las instrucciones.',
-      isRateLimit: false,
-      isEmailNotConfirmed: false,
-    }
-  }
-
-  // 7. Contraseña débil
+  // 9. Contraseña débil
   if (errorCode.includes('weak_password') || rawMessage.includes('password')) {
     return {
       code: 'WEAK_PASSWORD',
@@ -110,7 +142,7 @@ export function translateAuthError(error: AuthError | Error | null): ParsedAuthE
     }
   }
 
-  // 8. Errores de red explícitos
+  // 10. Errores de red explícitos
   if (rawMessage.includes('failed to fetch') || rawMessage.includes('network request failed')) {
     return {
       code: 'NETWORK_ERROR',

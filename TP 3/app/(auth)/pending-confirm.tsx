@@ -61,6 +61,7 @@ export default function PendingConfirmScreen() {
       })
 
       if (error) {
+        console.warn('Error en resend signup:', error)
         const parsed = translateAuthError(error)
         if (parsed.isRateLimit) {
           setCooldown(60)
@@ -81,7 +82,7 @@ export default function PendingConfirmScreen() {
     }
   }
 
-  // Verificar el código de 6 dígitos OTP de confirmación de registro
+  // Verificar el código de confirmación de registro (de 6 a 8 dígitos)
   const handleVerifyCode = async () => {
     if (!pendingEmail || !otpCode || otpCode.trim().length < 6 || isLoading) return
     setIsLoading(true)
@@ -97,6 +98,7 @@ export default function PendingConfirmScreen() {
 
       // 2. Fallback a type: 'email' por compatibilidad de tipos de Supabase
       if (error) {
+        console.warn('Error en verifyOtp signup, intentando tipo email:', error)
         const retry = await supabase.auth.verifyOtp({
           email: pendingEmail,
           token: otpCode.trim(),
@@ -106,6 +108,7 @@ export default function PendingConfirmScreen() {
       }
 
       if (error) {
+        console.warn('Error en verifyOtp final:', error)
         const parsed = translateAuthError(error)
         setStatusMessage('El código de confirmación es incorrecto o ha expirado.')
         setIsSuccessMessage(false)
@@ -157,12 +160,12 @@ export default function PendingConfirmScreen() {
               </Text>
             </View>
 
-            {/* Campo para ingresar el código de 6 dígitos */}
+            {/* Campo para ingresar el código (acepta de 6 a 8 dígitos) */}
             <CustomInput
-              label="Código de 6 dígitos del correo"
-              placeholder="Ej: 123456"
+              label="Código de verificación"
+              placeholder="Ej: 12345678"
               keyboardType="number-pad"
-              maxLength={6}
+              maxLength={8}
               leftIcon="shield-checkmark-outline"
               value={otpCode}
               onChangeText={setOtpCode}

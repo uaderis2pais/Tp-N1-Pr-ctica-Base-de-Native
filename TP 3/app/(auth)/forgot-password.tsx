@@ -7,12 +7,10 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
 } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Ionicons } from '@expo/vector-icons'
 import * as Linking from 'expo-linking'
 
 import { theme } from '../../src/theme/theme'
@@ -68,7 +66,7 @@ export default function ForgotPasswordScreen() {
     return () => clearInterval(timer)
   }, [cooldown > 0])
 
-  // Paso 1: Enviar instrucciones y código por email
+  // Paso 1: Enviar instrucciones y código por email directamente
   const onSubmitEmail = async (data: ForgotPasswordFormData) => {
     if (isLoading || cooldown > 0) return
     setIsLoading(true)
@@ -86,18 +84,16 @@ export default function ForgotPasswordScreen() {
       })
 
       if (error) {
+        console.warn('Error en resetPasswordForEmail:', error)
         const parsed = translateAuthError(error)
-        if (parsed.isRateLimit) {
-          setCooldown(60)
-          setErrorMessage(parsed.message)
-          return
-        }
+        setErrorMessage(parsed.message)
+        return
       }
 
       setCooldown(60)
       setStep('verify_code')
       setNeutralMessage(
-        'Si el email existe en nuestro sistema, vas a recibir las instrucciones y un código de 6 dígitos.'
+        'Si el email existe y está confirmado en el sistema, vas a recibir el código de verificación.'
       )
     } catch (err: any) {
       const parsed = translateAuthError(err)
@@ -107,7 +103,7 @@ export default function ForgotPasswordScreen() {
     }
   }
 
-  // Paso 2: Verificar el código de 6 dígitos (OTP) directo en la app (Figma Forgot password #3 & #4)
+  // Paso 2: Verificar el código OTP (de 6 a 8 dígitos) directo en la app
   const handleVerifyCode = async () => {
     if (!otpCode || otpCode.trim().length < 6 || isLoading) return
     setIsLoading(true)
@@ -121,6 +117,7 @@ export default function ForgotPasswordScreen() {
       })
 
       if (error) {
+        console.warn('Error en verifyOtp recovery:', error)
         const parsed = translateAuthError(error)
         setErrorMessage('El código ingresado es incorrecto o ha expirado.')
         return
@@ -167,7 +164,7 @@ export default function ForgotPasswordScreen() {
               <Text style={styles.subtitle}>
                 {step === 'request'
                   ? 'Ingresá tu correo para restablecer tu clave'
-                  : 'Ingresá el código de 6 dígitos o usa el enlace del mail'}
+                  : 'Ingresá el código de verificación enviado a tu correo'}
               </Text>
             </View>
 
@@ -177,7 +174,7 @@ export default function ForgotPasswordScreen() {
             <ErrorMessageBanner message={errorMessage} type="error" />
             <ErrorMessageBanner message={neutralMessage} type="info" />
 
-            {/* Formulario Paso 1: Solicitar Email */}
+            {/* Formulario Paso 1: Solicitar Email directamente */}
             {step === 'request' ? (
               <View style={styles.formSection}>
                 <Controller
@@ -209,7 +206,7 @@ export default function ForgotPasswordScreen() {
                 />
               </View>
             ) : (
-              /* Formulario Paso 2: Ingresar Código OTP (Figma Forgot password #3 & #4) */
+              /* Formulario Paso 2: Ingresar Código OTP (Acepta de 6 a 8 dígitos) */
               <View style={styles.formSection}>
                 <Text style={styles.emailNotificationText}>
                   Enviamos un código de verificación a:{'\n'}
@@ -217,10 +214,10 @@ export default function ForgotPasswordScreen() {
                 </Text>
 
                 <CustomInput
-                  label="Código de 6 dígitos"
-                  placeholder="Ej: 123456"
+                  label="Código de verificación"
+                  placeholder="Ej: 12345678"
                   keyboardType="number-pad"
-                  maxLength={6}
+                  maxLength={8}
                   leftIcon="shield-checkmark-outline"
                   value={otpCode}
                   onChangeText={setOtpCode}

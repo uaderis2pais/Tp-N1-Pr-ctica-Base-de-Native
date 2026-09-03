@@ -2,26 +2,25 @@ import React from 'react'
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
+  TouchableOpacity,
+  StatusBar,
   Platform,
-  StatusBar as RNStatusBar,
 } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons'
 import { theme } from '../theme/theme'
 
 interface ScreenHeaderProps {
   title: string
-  onBack?: () => void
   showBack?: boolean
+  onBack?: () => void
 }
 
 export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
   title,
-  onBack,
   showBack = true,
+  onBack,
 }) => {
   const router = useRouter()
 
@@ -34,39 +33,34 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
   }
 
   return (
-    <View style={styles.headerBackground}>
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.headerRow}>
-          {showBack ? (
-            <TouchableOpacity
-              onPress={handleBack}
-              style={styles.backButton}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
-              <Text style={styles.titleText}>{title}</Text>
-            </TouchableOpacity>
-          ) : (
-            <Text style={[styles.titleText, { marginLeft: theme.spacing.md }]}>
-              {title}
-            </Text>
-          )}
-        </View>
-      </SafeAreaView>
+    <View style={styles.container}>
+      <View style={styles.content}>
+        {showBack ? (
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={handleBack}
+            activeOpacity={0.7}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
+            <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+            <Text style={styles.title}>{title}</Text>
+          </TouchableOpacity>
+        ) : (
+          <Text style={[styles.title, styles.titleNoBack]}>{title}</Text>
+        )}
+      </View>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
-  headerBackground: {
+  container: {
     backgroundColor: theme.colors.primary,
-    paddingTop: Platform.OS === 'android' ? RNStatusBar.currentHeight || 20 : 0,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 8 : 44,
+    paddingBottom: theme.spacing.md,
   },
-  safeArea: {
-    backgroundColor: theme.colors.primary,
-  },
-  headerRow: {
-    height: 54,
+  content: {
+    height: 44,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: theme.spacing.md,
@@ -74,12 +68,15 @@ const styles = StyleSheet.create({
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: theme.spacing.xs,
+    height: 44,
   },
-  titleText: {
+  title: {
     fontFamily: theme.fonts.semiBold,
-    fontSize: 16,
+    fontSize: 18,
     color: '#FFFFFF',
     marginLeft: theme.spacing.xs,
+  },
+  titleNoBack: {
+    marginLeft: theme.spacing.sm,
   },
 })

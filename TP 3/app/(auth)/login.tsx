@@ -34,7 +34,7 @@ export default function LoginScreen() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [cooldown, setCooldown] = useState(0)
 
-  // CAPTCHA Obligatorio (Puntos Extra)
+  // CAPTCHA Modal (Puntos Extra)
   const [showCaptcha, setShowCaptcha] = useState(false)
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
 
@@ -55,12 +55,7 @@ export default function LoginScreen() {
   const emailValue = watch('email')
   const passwordValue = watch('password')
 
-  // El formulario sólo es válido si los campos están completos Y el CAPTCHA fue verificado
-  const isButtonFormValid =
-    isValid &&
-    emailValue?.length > 0 &&
-    passwordValue?.length > 0 &&
-    captchaToken !== null
+  const isButtonFormValid = isValid && emailValue?.length > 0 && passwordValue?.length > 0
 
   useEffect(() => {
     let timer: NodeJS.Timeout
@@ -75,18 +70,21 @@ export default function LoginScreen() {
   }, [cooldown])
 
   const onSubmit = async (data: LoginFormData) => {
-    if (!captchaToken || isLoading || cooldown > 0) return
+    if (isLoading || cooldown > 0) return
     setIsLoading(true)
     setErrorMessage(null)
 
     try {
+      const options = captchaToken ? { captchaToken } : undefined
+
       const { data: authData, error } = await supabase.auth.signInWithPassword({
         email: data.email.trim(),
         password: data.password,
-        options: { captchaToken },
+        options,
       })
 
       if (error) {
+        console.warn('Error en signInWithPassword:', error)
         const parsed = translateAuthError(error)
 
         if (parsed.isEmailNotConfirmed) {
@@ -100,7 +98,6 @@ export default function LoginScreen() {
         }
 
         setErrorMessage(parsed.message)
-        // Resetear captcha si falla para exigir nueva prueba
         setCaptchaToken(null)
         return
       }
@@ -185,7 +182,7 @@ export default function LoginScreen() {
                 <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
               </TouchableOpacity>
 
-              {/* Botón Obligatorio de Verificación de CAPTCHA */}
+              {/* Botón de Verificación de CAPTCHA (Opcional) */}
               <TouchableOpacity
                 style={[
                   styles.captchaTrigger,
@@ -206,7 +203,7 @@ export default function LoginScreen() {
                 >
                   {captchaToken
                     ? '✓ CAPTCHA Verificado'
-                    : 'Completar CAPTCHA '}
+                    : 'Completar CAPTCHA (Opcional)'}
                 </Text>
               </TouchableOpacity>
 
