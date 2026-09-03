@@ -1,6 +1,6 @@
 # iBank — Banking & E-Money Management App (TP3 x Supabase)
 
-Aplicación móvil bancaria desarrollada con **React Native (Expo SDK 54)**, **Expo Router v6**, **TypeScript** y **Supabase Auth** como backend de autenticación, siguiendo fielmente el kit de diseño de **Figma iBank** y la rúbrica oficial de evaluación.
+Aplicación móvil bancaria desarrollada con **React Native (Expo SDK 57)**, **Expo Router v6**, **TypeScript** y **Supabase Auth** como backend de autenticación, siguiendo fielmente el kit de diseño de **Figma iBank** y la rúbrica oficial de evaluación.
 
 ---
 
