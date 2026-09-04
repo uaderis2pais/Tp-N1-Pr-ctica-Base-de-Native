@@ -57,7 +57,8 @@ export const BiometricAuthCard: React.FC<BiometricAuthCardProps> = ({
         Alert.alert('¡Autenticado!', `${biometricType} verificado correctamente.`)
         if (onSuccess) onSuccess()
       } else {
-        if (result.error !== 'user_cancel') {
+        const errorType = (result as any).error
+        if (errorType !== 'user_cancel') {
           Alert.alert('Error', 'No se pudo verificar la identidad biométrica.')
         }
       }
